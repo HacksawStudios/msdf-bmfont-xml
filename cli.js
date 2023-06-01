@@ -1,36 +1,39 @@
 #!/usr/bin/env node
 
-const pjson = require('./package.json');
+const pkg = require('./package.json');
 const generateBMFont = require('./index');
 const fs = require('fs');
 const path = require('path');
 const handlebars = require('handlebars');
 const args = require('commander');
+const updateNotifier = require('update-notifier');
 const utils = require('./lib/utils');
+
+updateNotifier({pkg}).notify();
 
 let fontFile;
 args
-  .version('msdf-bmfont-xml v' + pjson.version)
+  .version('msdf-bmfont-xml v' + pkg.version)
   .usage('[options] <font-file>')
   .arguments('<font_file>')
   .description('Creates a BMFont compatible bitmap font of signed distance fields from a font file')
-  .option('-f, --output-type <format>', 'font file format: xml(default) | json', /^(xml|json)$/i, 'xml')
+  .option('-f, --output-type <format>', 'font file format: xml(default) | json | txt', /^(xml|json|txt)$/i, 'xml')
   .option('-o, --filename <atlas_path>', 'filename of font textures (defaut: font-face) font filename always set to font-face name')
-  .option('-s, --font-size <fontSize>', 'font size for generated textures (default: 42)', 42)
+  .option('-s, --font-size <fontSize>', 'font size for generated textures', 42)
   .option('-i, --charset-file <charset>', 'user-specified charactors from text-file', fileExistValidate)
-  .option('-m, --texture-size <w,h>', 'ouput texture atlas size (defaut: 2048,2048)', (v) => {return v.split(',')}, [2048, 2048])
-  .option('-p, --texture-padding <n>', 'padding between glyphs (default: 1)', 1)
-  .option('-b, --border <n>', 'space between glyphs textures & edge (default: 0)', 0)
-  .option('-r, --distance-range <n>', 'distance range for SDF (default: 4)', 4)
-  .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf | svg', /^(msdf|sdf|psdf|svg)$/i, 'msdf')
-  .option('-d, --round-decimal <digit>', 'rounded digits of the output font file. (Defaut: 0)', 0)
+  .option('-m, --texture-size <w,h>', 'ouput texture atlas size', (v) => {return v.split(',')}, [2048, 2048])
+  .option('-p, --texture-padding <n>', 'padding between glyphs', 1)
+  .option('-b, --border <n>', 'space between glyphs textures & edge', 0)
+  .option('-r, --distance-range <n>', 'distance range for SDF', 4)
+  .option('-t, --field-type <type>', 'msdf(default) | sdf | psdf', /^(msdf|sdf|psdf)$/i, 'msdf')
+  .option('-d, --round-decimal <digit>', 'rounded digits of the output font file.', 0)
   .option('-v, --vector', 'generate svg vector file for debuging', false)
   .option('-u, --reuse [file.cfg]', 'save/create config file for reusing settings', false)
-  .option('    --smart-size', 'shrink atlas to the smallest possible square (Default: true)', true)
-  .option('    --pot', 'atlas size shall be power of 2 (Default: false)', false)
-  .option('    --square', 'atlas size shall be square (Default: false)', false)
-  .option('    --rot', 'allow 90-degree rotation while packing (Default: false)', false)
-  .option('    --rtl', 'use RTL(Arabic/Persian) charators fix (Default: false)', false)
+  .option('    --smart-size', 'shrink atlas to the smallest possible square', true)
+  .option('    --pot', 'atlas size shall be power of 2', false)
+  .option('    --square', 'atlas size shall be square', false)
+  .option('    --rot', 'allow 90-degree rotation while packing', false)
+  .option('    --rtl', 'use RTL(Arabic/Persian) charactors fix', false)
   .action(function(file){
     fontFile = fileExistValidate(file);
   }).parse(process.argv);
@@ -54,14 +57,18 @@ const fontDir = path.dirname(fontFile);
 // need to feed manually
 //
 opt.fontFile = fontFile;
-opt.filename = utils.valueQueue([opt.filename, path.join(fontDir, fontface)]);
-opt.vector = utils.valueQueue([opt.vector, false]);
-opt.reuse = utils.valueQueue([opt.reuse, false]);
-opt.smartSize = utils.valueQueue([opt.smartSize, false]);
-opt.pot = utils.valueQueue([opt.pot, false]);
-opt.square = utils.valueQueue([opt.square, false]);
-opt.rot = utils.valueQueue([opt.rot, false]);
-opt.rtl = utils.valueQueue([opt.rtl, false]);
+if (typeof opt.reuse === 'boolean') {
+  opt.filename = utils.valueQueue([opt.filename, path.join(fontDir, fontface)]);
+  opt.vector = utils.valueQueue([opt.vector, false]);
+  opt.reuse = utils.valueQueue([opt.reuse, false]);
+  opt.smartSize = utils.valueQueue([opt.smartSize, false]);
+  opt.pot = utils.valueQueue([opt.pot, false]);
+  opt.square = utils.valueQueue([opt.square, false]);
+  opt.rot = utils.valueQueue([opt.rot, false]);
+  opt.rtl = utils.valueQueue([opt.rtl, false]);
+} else {
+  opt.filename = utils.valueQueue([opt.filename, path.join("./", fontface)]);
+}
 
 //
 // Display options 
@@ -71,9 +78,10 @@ const padding = longestLength(keys) + 2;
 console.log("\nUsing following settings");
 console.log("========================================");
 keys.forEach(key => {
-  if (key === 'charsetFile' && typeof opt[key] === 'undefined') {
+  if (typeof opt.reuse === 'string' && typeof opt[key] === 'undefined') {
+    console.log(pad(key, padding) + ": Defined in [" + opt.reuse + "]");
+  } else if (key === 'charsetFile' && typeof opt[key] === 'undefined') {
     console.log(pad(key, padding) + ": Unspecified, fallback to ASC-II");
-
   } else console.log(pad(key, padding) + ": " + opt[key]);
 });
 console.log("========================================");

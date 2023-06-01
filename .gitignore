@@ -9,3 +9,4 @@ test/assets/fonts/*.svg
 test/assets/fonts/*.cfg
 .vscode/
 .eslintrc*
+.prettierrc

@@ -4,12 +4,17 @@
 [![npm version](https://badge.fury.io/js/msdf-bmfont-xml.svg)](https://badge.fury.io/js/msdf-bmfont-xml)
 ![npm](https://img.shields.io/npm/dm/msdf-bmfont-xml.svg)
 
-Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and a xml(.fnt} or json representation of an AngelCode BMfont.
+Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and an `xml(.fnt}` / `txt(.fnt)` or `json` representation of an AngelCode BMFont file.
 
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
-This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
-
+This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout. (See: [BMFont format](http://www.angelcode.com/products/bmfont/doc/file_format.html))
 ![Preview image](https://raw.githubusercontent.com/soimy/msdf-bmfont-xml/master/assets/msdf-bmfont-xml.png)
+
+## Run script to see MSDF font in browser using pixi.js
+
+```bash
+npm install & npm run render
+```
 
 ## Install as CLI
 
@@ -27,31 +32,29 @@ Type in `msdf-bmfont --help` for more detail usage.
 ```bash
 Usage: msdf-bmfont [options] <font-file>
 
-  Creates a BMFont compatible bitmap font of signed distance fields from a font file
+Creates a BMFont compatible bitmap font of signed distance fields from a font file
 
-  Options:
-
-    -V, --version                 output the version number
-    -f, --output-type <format>    font file format: xml(default) | json
-    -o, --filename <atlas_path>   filename of font textures (defaut: font-face)
-                                  font filename always set to font-face name
-    -s, --font-size <fontSize>    font size for generated textures (default: 42)
-    -i, --charset-file <charset>  user-specified charactors from text-file
-    -m, --texture-size <w,h>      Width/Height of generated textures (default: 512,512)
-    -p, --texture-padding <n>     padding between glyphs (default: 1)
-    -b, --border <n>              space between glyphs textures & edge (default: 0)
-    -r, --distance-range <n>      distance range for SDF (default: 4)
-    -t, --field-type <type>       msdf(default) | sdf | psdf | svg
-    -d, --round-decimal <digit>   rounded digits of the output font file. (Defaut: 0)
-    -v, --vector                  generate svg vector file for debuging
-    -u, --reuse [file.cfg]        use old config to append font, ommit file to save new cfg
-        --tolerance <value>       use point tolerance to filter problematic vector shape (Defaut: 0)
-        --smart-size              shrink atlas to the smallest possible square (Default: false)
-        --pot                     atlas size shall be power of 2 (Default: false)
-        --square                  atlas size shall be square (Default: false)
-        --rot                     allow 90-degree rotation while packing (Default: false)
-        --rtl                     use RTL(Arabic/Persian) charators fix (Default: false)
-    -h, --help                    output usage information
+Options:
+  -V, --version                 output the version number
+  -f, --output-type <format>    font file format: xml(default) | json | txt (default: "xml")
+  -o, --filename <atlas_path>   filename of font textures (defaut: font-face)
+                                font filename always set to font-face name
+  -s, --font-size <fontSize>    font size for generated textures (default: 42)
+  -i, --charset-file <charset>  user-specified charactors from text-file
+  -m, --texture-size <w,h>      ouput texture atlas size (default: [2048,2048])
+  -p, --texture-padding <n>     padding between glyphs (default: 1)
+  -b, --border <n>              space between glyphs textures & edge (default: 0)
+  -r, --distance-range <n>      distance range for SDF (default: 4)
+  -t, --field-type <type>       msdf(default) | sdf | psdf (default: "msdf")
+  -d, --round-decimal <digit>   rounded digits of the output font file. (default: 0)
+  -v, --vector                  generate svg vector file for debuging
+  -u, --reuse [file.cfg]        save/create config file for reusing settings (default: false)
+      --smart-size              shrink atlas to the smallest possible square
+      --pot                     atlas size shall be power of 2
+      --square                  atlas size shall be square
+      --rot                     allow 90-degree rotation while packing
+      --rtl                     use RTL(Arabic/Persian) charactors fix
+  -h, --help                    output usage information
 ```
 
 ### CLI Examples
@@ -127,9 +130,9 @@ generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
 
 ### API
 
-#### `generateBMFont(fontPath, [opt], callback)`
+#### `generateBMFont(fontPath | fontBuffer, [opt], callback)`
 
-Renders a bitmap font from the font at `fontPath` with optional `opt` settings, triggering `callback` on complete.
+Renders a bitmap font from the font specified by `fontPath` or `fontBuffer`, with optional `opt` settings, triggering `callback` on complete.
 
 Options:
 
@@ -138,7 +141,7 @@ Options:
     - `xml` a BMFont standard .fnt file which is wildly supported.
     - `json` a JSON file compatible with [Hiero](https://github.com/libgdx/libgdx/wiki/Hiero)
 - `filename` (String)
-  - filename of both font file and font atlas. If omited, font face name is used.
+  - filename of both font file and font atlas. If omited, font face name is used. **Required** if font is provided as a Buffer.
 - `charset` (String|Array)
   - the characters to include in the bitmap font. Defaults to all ASCII printable characters.
 - `fontSize` (Number)
