@@ -18,11 +18,21 @@ const controlChars = ['\n', '\r', '\t'];
 const binaryLookup = {
   darwin: 'msdfgen.osx',
   win32: 'msdfgen.exe',
-  linux: 'msdfgen.linux',
-  linux_arm64: 'msdfgen.linux'
+  linux: 'msdfgen.linux'
 };
 
 module.exports = generateBMFont;
+
+function getBinaryDir(){
+  switch(process.platform) {
+      case 'win32':
+          return process.arch === 'x64' ? 'win64' : 'win32';
+      case 'linux':
+          return process.arch === 'arm64' ? 'linux_arm64' : 'linux';
+      case 'darwin':
+          return 'darwin';
+  }
+}
 
 /**
  * Creates a BMFont compatible bitmap font of signed distance fields from a font file
@@ -52,7 +62,8 @@ function generateBMFont (fontPath, opt, callback) {
     opt = {};
   }
 
-  const binName = process.arch === "arm64" ? binaryLookup[`${process.platform}_${process.arch}`] : binaryLookup[process.platform];
+  const binName = binaryLookup[process.platform];
+  const binDir = getBinaryDir();
 
   assert.ok(binName, `No msdfgen binary for platform ${process.platform}.`);
   assert.ok(fontPath, 'must specify a font path');
@@ -64,7 +75,7 @@ function generateBMFont (fontPath, opt, callback) {
 
   // Set fallback output path to font path
   let fontDir = typeof fontPath === 'string' ? path.dirname(fontPath) : '';
-  const binaryPath = path.join(__dirname, 'bin', process.platform, binName);
+  const binaryPath = path.join(__dirname, 'bin', binDir, binName);
 
   // const reuse = (typeof opt.reuse === 'boolean' || typeof opt.reuse === 'undefined') ? {} : opt.reuse.opt;
   let reuse, cfg = {};
