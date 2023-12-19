@@ -305,7 +305,7 @@ function generateBMFont (fontPath, opt, callback) {
   });
 }
 
-function generateImage(opt, callback) {
+function generateImage (opt, callback) {
   const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug, tolerance} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
