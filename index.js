@@ -17,20 +17,22 @@ const controlChars = ['\n', '\r', '\t'];
 
 const binaryLookup = {
   darwin: 'msdfgen.osx',
+  darwin_arm64: 'msdfgen.osx',
   win32: 'msdfgen.exe',
-  linux: 'msdfgen.linux'
+  linux: 'msdfgen.linux',
+  linux_arm64: 'msdfgen.linux'
 };
 
 module.exports = generateBMFont;
 
-function getBinaryDir(){
-  switch(process.platform) {
-      case 'win32':
-          return process.arch === 'x64' ? 'win64' : 'win32';
-      case 'linux':
-          return process.arch === 'arm64' ? 'linux_arm64' : 'linux';
-      case 'darwin':
-          return 'darwin';
+function getBinaryDir() {
+  switch (process.platform) {
+    case 'win32':
+      return process.arch === 'x64' ? 'win64' : 'win32';
+    case 'linux':
+      return process.arch === 'arm64' ? 'linux_arm64' : 'linux';
+    case 'darwin':
+      return 'darwin';
   }
 }
 
@@ -62,10 +64,11 @@ function generateBMFont (fontPath, opt, callback) {
     opt = {};
   }
 
-  const binName = binaryLookup[process.platform];
+  const lookupKey = process.arch === "arm64" ?`${process.platform}_${process.arch}` : process.platform;
+  const binName = binaryLookup[lookupKey];
   const binDir = getBinaryDir();
 
-  assert.ok(binName, `No msdfgen binary for platform ${process.platform}.`);
+  assert.ok(binName, `No msdfgen binary for platform ${lookupKey}.`);
   assert.ok(fontPath, 'must specify a font path');
   assert.ok(typeof fontPath === 'string' || fontPath instanceof Buffer, 'font must be string path or Buffer');
   assert.ok(opt.filename || !(fontPath instanceof Buffer), 'must specify filename if font is a Buffer');
