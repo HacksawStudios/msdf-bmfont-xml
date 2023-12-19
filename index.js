@@ -56,7 +56,7 @@ function getBinaryDir() {
  * @param {function(string, Array.<Object>, Object)} callback - Callback funtion(err, textures, font)
  *
  */
-function generateBMFont(fontPath, opt, callback) {
+function generateBMFont (fontPath, opt, callback) {
   if (typeof opt === 'function') {
     callback = opt;
     opt = {};
@@ -143,7 +143,7 @@ function generateBMFont(fontPath, opt, callback) {
 
   const fontface = typeof fontPath === 'string' ? path.basename(fontPath, path.extname(fontPath)) : filename;
 
-  if (!filename) {
+  if(!filename) {
     filename = fontface;
     console.log(`Use font-face as filename : ${filename}`);
   } else {
@@ -165,7 +165,7 @@ function generateBMFont(fontPath, opt, callback) {
   bar = new ProgressBar.Bar({
     format: "Generating {percentage}%|{bar}| ({value}/{total}) {duration}s",
     clearOnComplete: true
-  }, ProgressBar.Presets.shades_classic);
+  }, ProgressBar.Presets.shades_classic); 
   bar.start(charset.length, 0);
 
   mapLimit(charset, 15, (char, cb) => {
@@ -196,7 +196,7 @@ function generateBMFont(fontPath, opt, callback) {
       let img = new Jimp(bin.width, bin.height, fillColor);
       if (index > pages.length - 1) {
         if (packer.bins.length > 1) texname = `${filename}.${index}`;
-        else texname = filename;
+        else texname = filename; 
         pages.push(`${texname}.png`);
       } else {
         texname = path.basename(pages[index], path.extname(pages[index]));
@@ -231,7 +231,7 @@ function generateBMFont(fontPath, opt, callback) {
       const buffer = await img.getBufferAsync(Jimp.MIME_PNG);
       let tex = {
         filename: path.join(fontDir, texname),
-        texture: buffer
+        texture: buffer 
       }
       if (debug) tex.svg = svg;
       return tex;
@@ -288,7 +288,7 @@ function generateBMFont(fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if (roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal, true);
+    if(roundDecimal !== null) utils.roundAllValue(fontData, roundDecimal, true);
     let fontFile = {};
     const ext = outputType === "json" ? `.json` : `.fnt`;
     fontFile.filename = path.join(fontDir, fontface + ext);
@@ -297,7 +297,7 @@ function generateBMFont(fontPath, opt, callback) {
     // Store pages name and available packer freeRects in settings
     settings.pages = pages;
     settings.packer = {};
-    settings.packer.bins = packer.save();
+    settings.packer.bins = packer.save(); 
     fontFile.settings = settings;
 
     console.log("\nGeneration complete!\n");
@@ -306,7 +306,7 @@ function generateBMFont(fontPath, opt, callback) {
 }
 
 function generateImage(opt, callback) {
-  const { binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug, tolerance } = opt;
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal, debug, tolerance} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -377,7 +377,7 @@ function generateImage(opt, callback) {
       height = 0;
     } else {
       const buffer = new Uint8ClampedArray(pixels);
-      imageData = new Jimp({ data: buffer, width: width, height: height });
+      imageData = new Jimp({data: buffer, width: width, height: height});
     }
     const container = {
       data: {
@@ -399,7 +399,6 @@ function generateImage(opt, callback) {
     };
     callback(null, container);
   });
-
   subproc.stdin.write(shapeDesc);
   subproc.stdin.write('\n');
   subproc.stdin.destroy();
